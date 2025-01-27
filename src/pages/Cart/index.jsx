@@ -4,7 +4,7 @@ import Button from '@mui/material/Button';
 import MenuItem from '@mui/material/MenuItem';
 import api from '../../api/api';
 import '../../assets/css/global.css';
-import { Box, Paper, styled, Table, TableBody, TableCell, tableCellClasses, TableContainer, TableHead, TablePagination, TableRow } from '@mui/material';
+import { Alert, Box, Paper, styled, Table, TableBody, TableCell, tableCellClasses, TableContainer, TableHead, TablePagination, TableRow } from '@mui/material';
 
 
 function Cart() {
@@ -13,10 +13,18 @@ function Cart() {
   const [editingCartId, setEditingCartId] = useState(null);
   const inputQuantityCart = useRef();
   const inputProduct = useRef();
-
   const [filterText, setFilterText] = useState('');
-  const [page, setPage] = useState(0);  // Current page index
+  const [page, setPage] = useState(0);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const [rowsPerPage, setRowsPerPage] = useState(5);
+
+  const clearMessages = () => {
+    setTimeout(() => {
+      setErrorMessage('');
+      setSuccessMessage('');
+    }, 2000);
+  };
 
   const handleFilterChange = (e) => {
     setFilterText(e.target.value);
@@ -56,40 +64,62 @@ function Cart() {
   }
 
   async function createCart() {
-
     const quantityCart = inputQuantityCart.current.value;
-    const ItemId = inputProduct.current.value;
+    const itemId = inputProduct.current.value;
 
-    if (quantityCart === "" || ItemId === "") {
-      alert("Campo vazio, por favor preencha todos os campos");
+    if (quantityCart === "" || itemId === "") {
+      setErrorMessage("Campo vazio, por favor preencha todos os campos");
+      clearMessages();
+      return;
+    }
+
+    if (isNaN(quantityCart) || quantityCart <= 0) {
+      setErrorMessage("Campo Quantidade deve ser um número maior que zero, por favor preencha o campo corretamente");
+      clearMessages();
       return;
     }
 
     try {
-      await api.post('v1/carts', { quantityCart, ItemId });
+      await api.post('v1/carts', { quantityCart, itemId });
       inputQuantityCart.current.value = "";
       inputProduct.current.value = "";
+      setSuccessMessage("Carrinho criado com sucesso!");
+      clearMessages();
       getCart();
     } catch (error) {
-      console.error("Error creating item:", error);
+      console.error("Error creating cart:", error);
+      setErrorMessage("Erro ao criar carrinho, tente novamente");
+      clearMessages();
     }
   }
-
   async function updateCart(id) {
     try {
       const quantityCart = inputQuantityCart.current.value;
-      const ItemId = inputProduct.current.value;
-      if (quantityCart === "" || ItemId === "") {
-        alert("Campo vazio, por favor preencha todos os campos");
+      const itemId = inputProduct.current.value;
+
+      if (quantityCart === "" || itemId === "") {
+        setErrorMessage("Campo vazio, por favor preencha todos os campos");
+        clearMessages();
         return;
       }
-      await api.put(`v1/carts/${id}`, { quantityCart, ItemId });
+
+      if (isNaN(quantityCart) || quantityCart <= 0) {
+        setErrorMessage("Campo Quantidade deve ser um número maior que zero, por favor preencha o campo corretamente");
+        clearMessages();
+        return;
+      }
+
+      await api.put(`v1/carts/${id}`, { quantityCart, itemId });
       inputQuantityCart.current.value = "";
       inputProduct.current.value = "";
+      setSuccessMessage("Carrinho atualizado com sucesso!");
+      clearMessages();
       setEditingCartId(null);
       getCart();
     } catch (error) {
-      console.error("Error updating item:", error);
+      console.error("Error updating cart:", error);
+      setErrorMessage("Erro ao atualizar carrinho, tente novamente");
+      clearMessages();
     }
   }
 
@@ -97,17 +127,19 @@ function Cart() {
     console.log(cart);
     inputQuantityCart.current.value = cart.quantityCart;
     inputProduct.current.value = cart.productId;
-    // const selectElement = document.getElementById('outlined-select-product');
-    // selectElement.textContent = cart.productName;
     setEditingCartId(cart.id);
   }
 
   async function deleteCart(id) {
     try {
       await api.delete(`v1/carts/${id}`);
+      setSuccessMessage("Carrinho deletado com sucesso!");
+      clearMessages();
       getCart();
     } catch (error) {
       console.error("Error deleting item:", error);
+      setErrorMessage("Erro ao deletar carrinho, tente novamente");
+      clearMessages();
     }
   }
 
@@ -119,7 +151,7 @@ function Cart() {
 
   const StyledTableCell = styled(TableCell)(({ theme }) => ({
     [`&.${tableCellClasses.head}`]: {
-      backgroundColor: '#1976d2',
+      backgroundColor: '#023E73',
       color: theme.palette.common.white,
     },
     [`&.${tableCellClasses.body}`]: {
@@ -129,8 +161,9 @@ function Cart() {
 
   return (
     <div className='container'>
-      <form action="" style={{ padding: '0px' }}>
-        <label htmlFor="outlined-select-product">Produto</label>
+      {errorMessage && <Alert severity="error">{errorMessage}</Alert>}
+      {successMessage && <Alert severity="success">{successMessage}</Alert>}
+      <form style={{ marginTop: '20px', maxWidth: '80%', display: 'flex', flexDirection: 'row', gap: '16px', justifyContent: 'center', alignItems: 'center', marginLeft: 'auto', marginRight: 'auto', flexWrap: 'wrap', }}>
         <TextField
           id="outlined-select-product"
           select
@@ -138,40 +171,51 @@ function Cart() {
           inputRef={inputProduct}
           size='small'
           placeholder='Produto'
-          label=""
+          label="Produto"
+          sx={{ width: '300px' }}
         >
           {items.map((item) => (
             <MenuItem key={item.id} value={item.id}>
-              {item.productName}
+              {item.productName.charAt(0).toUpperCase() + item.productName.slice(1)}    - {item.quantity} disponíveis
             </MenuItem>
           ))}
         </TextField>
 
-        <TextField placeholder='Quantidade' size='small' id="quantityCart" variant="outlined" inputRef={inputQuantityCart} />
+        <TextField
+          placeholder='Quantidade'
+          size='small'
+          id="quantityCart"
+          variant="outlined"
+          inputRef={inputQuantityCart}
+          sx={{ width: '300px' }}
+        />
         <Button style={{ width: "100px" }} variant="contained" color="success" type='button' onClick={editingCartId ? () => updateCart(editingCartId) : createCart}>
           {editingCartId ? "Atualizar" : "Adicionar"}
         </Button>
       </form>
 
+      <br />
 
-      <TableContainer component={Paper} sx={{ width: 500, minWidth: 200 }}>
-      <Box style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}>
-        <TextField
-          width='40%'
-          label="Pesquisar"
-          id="search"
-          variant="outlined"
-          value={filterText}
-          onChange={handleFilterChange}
-        >
-            </TextField>
-                </Box>
-        <Table sx={{ minWidth: 200 }} aria-label="simple table">
+      <TableContainer component={Paper} sx={{ width: '50%', minWidth: 200, margin: '0 auto', boxShadow: 3, padding: 2, borderRadius: 2, }} >
+        <Box sx={{ display: 'flex', justifyContent: 'flex-start', marginBottom: 2 }}>
+          <TextField
+            width='40%'
+            label="Pesquisar"
+            id="search"
+            variant="outlined"
+            value={filterText}
+            onChange={handleFilterChange}
+            sx={{ marginRight: 2 }}
+            size='small'
+          >
+          </TextField>
+        </Box>
+        <Table aria-label="simple table">
           <TableHead>
             <TableRow>
-              <StyledTableCell>Produto</StyledTableCell>
-              <StyledTableCell>Quantidade</StyledTableCell>
-              <StyledTableCell align="left">Ações</StyledTableCell>
+              <StyledTableCell sx={{ fontSize: '18px', fontWeight: 'bold', }}>Produto</StyledTableCell>
+              <StyledTableCell sx={{ fontSize: '18px', fontWeight: 'bold', }}>Quantidade</StyledTableCell>
+              <StyledTableCell sx={{ fontSize: '18px', fontWeight: 'bold', }} align="center">Ações</StyledTableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -181,15 +225,15 @@ function Cart() {
                   key={cart.id}
                   sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                 >
-                  <TableCell align="left">{cart.productName}</TableCell>
-                  <TableCell>{cart.quantityCart}</TableCell>
-                  <TableCell align="center">
-                    <Button variant="contained" color="warning" onClick={() => editCart(cart)}>Editar</Button> &nbsp;
-                    <Button variant="outlined" color="error" onClick={() => deleteCart(cart.id)}>Excluir</Button>
+                  <TableCell sx={{ fontSize: '17px' }} align="left"> {cart.productName.charAt(0).toUpperCase() + cart.productName.slice(1)}</TableCell>
+                  <TableCell sx={{ fontSize: '17px' }} >{cart.quantityCart}</TableCell>
+                  <TableCell sx={{ fontSize: '17px' }} align="center">
+                    <Button variant="contained" color="info" onClick={() => editCart(cart)}>Editar</Button> &nbsp;
+                    <Button variant="contained" color="error" onClick={() => deleteCart(cart.id)}>Excluir</Button>
                   </TableCell>
-                  </TableRow>
-                    )) : (<TableRow><TableCell>Loading... </TableCell></TableRow>)}
-            </TableBody>
+                </TableRow>
+              )) : (<TableRow><TableCell>Loading... </TableCell></TableRow>)}
+          </TableBody>
         </Table>
         <TablePagination sx={{ fontSize: '1.1rem' }}
           component="div"
@@ -198,7 +242,7 @@ function Cart() {
           onPageChange={handleChangePage}
           rowsPerPage={rowsPerPage}
           onRowsPerPageChange={handleChangeRowsPerPage}
-          rowsPerPageOptions={[5, 10, 25]} />
+          rowsPerPageOptions={[]} />
       </TableContainer>
     </div>
   );

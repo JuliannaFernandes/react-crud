@@ -171,7 +171,7 @@ function Item() {
 
   const StyledTableCell = styled(TableCell)(({ theme }) => ({
     [`&.${tableCellClasses.head}`]: {
-      backgroundColor: '#1976d2',
+      backgroundColor: '#023E73',
       color: theme.palette.common.white,
     },
     [`&.${tableCellClasses.body}`]: {
@@ -183,11 +183,11 @@ function Item() {
     <div className='container'>
       {errorMessage && <Alert severity="error">{errorMessage}</Alert>}
       {successMessage && <Alert severity="success">{successMessage}</Alert>}
-      <form style={{marginTop: '20px',maxWidth: '80%',display: 'flex',flexDirection: 'row',gap: '16px',justifyContent: 'center',alignItems: 'center',marginLeft: 'auto',marginRight: 'auto',flexWrap: 'wrap',}}>
+      <form style={{ marginTop: '20px', maxWidth: '80%', display: 'flex', flexDirection: 'row', gap: '16px', justifyContent: 'center', alignItems: 'center', marginLeft: 'auto', marginRight: 'auto', flexWrap: 'wrap', }}>
         <TextField
           id="outlined-select-product"
           select
-          placeholder="Produto"
+          label="Produto"
           defaultValue=""
           inputRef={inputProduct}
           size="small"
@@ -227,28 +227,21 @@ function Item() {
       </form>
 
       <br />
-      
-      <TableContainer component={Paper} sx={{
-          width: '50%',
-          minWidth: 200,
-          margin: '0 auto',
-          boxShadow: 3,
-          padding: 2,
-          borderRadius: 2,
-        }}>
-      <Box  sx={{ display: 'flex', justifyContent: 'flex-start', marginBottom: 2 }}>
-        <TextField
-          width='40%'
-          placeholder="Pesquisar"
-          id="search"
-          variant="outlined"
-          value={filterText}
-          onChange={handleFilterChange}
-          sx={{ marginRight: 2 }}
-          size='small'
-        />
-      </Box>  
-        <Table  aria-label="simple table">
+
+      <TableContainer component={Paper} sx={{ width: '50%', minWidth: 200, margin: '0 auto', boxShadow: 3, padding: 2, borderRadius: 2,}}>
+        <Box sx={{ display: 'flex', justifyContent: 'flex-start', marginBottom: 2 }}>
+          <TextField
+            width='40%'
+            placeholder="Pesquisar"
+            id="search"
+            variant="outlined"
+            value={filterText}
+            onChange={handleFilterChange}
+            sx={{ marginRight: 2 }}
+            size='small'
+          />
+        </Box>
+        <Table aria-label="simple table">
           <TableHead>
             <TableRow>
               <StyledTableCell sx={{ fontSize: '18px', fontWeight: 'bold', }}>Produto</StyledTableCell>

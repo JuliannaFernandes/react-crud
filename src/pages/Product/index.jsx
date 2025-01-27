@@ -132,7 +132,7 @@ function Product() {
 
   const StyledTableCell = styled(TableCell)(({ theme }) => ({
     [`&.${tableCellClasses.head}`]: {
-      backgroundColor: '#1976d2',
+      backgroundColor: '#023E73',
       color: theme.palette.common.white,
     },
     [`&.${tableCellClasses.body}`]: {
@@ -148,7 +148,8 @@ function Product() {
 
       <form style={{ marginTop: '20px', maxWidth: '40%', display: 'flex', flexDirection: 'row', gap: '16px', justifyContent: 'center', alignItems: 'center', marginLeft: 'auto', marginRight: 'auto' }}>
         <TextField id="name" size="small" placeholder="Nome do produto" variant="outlined" sx={{ flexGrow: 1, '.MuiInputBase-root': { borderRadius: '8px', }, }} inputRef={inputName} />
-        <Button variant="contained" color="success" type='button' sx={{ width: '150px', height: '39px', fontSize: '17px', textTransform: 'none',
+        <Button variant="contained" color="success" type='button' sx={{
+          width: '150px', height: '39px', fontSize: '17px', textTransform: 'none',
         }} onClick={editingProductId ? () => updateProduct(editingProductId) : createProduct}>
           {editingProductId ? "Atualizar" : "Criar"}
         </Button>
@@ -229,7 +230,7 @@ function Product() {
           onPageChange={handleChangePage}
           rowsPerPage={rowsPerPage}
           onRowsPerPageChange={handleChangeRowsPerPage}
-          rowsPerPageOptions={[]} 
+          rowsPerPageOptions={[]}
         />
 
       </TableContainer>
