@@ -11,7 +11,7 @@ import { Paper, styled, Table, TableBody, TableCell, tableCellClasses, TableCont
 function Cart() {
   const [carts, setCart] = useState([]);
   const [items, setItems] = useState([]);
-  const [products, setProducts] = useState([]);
+  // const [products, setProducts] = useState([]);
   const [editingCartId, setEditingCartId] = useState(null);
   const inputQuantityCart = useRef();
   const inputProduct = useRef();
@@ -20,29 +20,18 @@ function Cart() {
     try {
       const response = await api.get('v1/carts');
       const cartData = response.data.$values || response.data;
-      console.log("Fetched carts:", cartData);
       setCart(cartData);
     } catch (error) {
       console.error("Error fetching carts:", error);
     }
   }
 
-  async function getProducts() {
-    try {
-      const response = await api.get('v1/products');
-      const productData = response.data.$values || response.data;
-      console.log("Fetched products:", productData);
-      setProducts(productData);
-    } catch (error) {
-      console.error("Error fetching products:", error);
-    }
-  }
+
 
   async function getItem() {
     try {
       const item = await api.get('v1/items');
       setItems(item.data.$values);
-      console.log("Fetched items:", item.data.$values);
     } catch (error) {
       console.error("Error fetching items:", error);
     }
@@ -77,7 +66,6 @@ function Cart() {
         return;
       }
       await api.put(`v1/carts/${id}`, { quantityCart, ItemId });
-      console.log("Updated item:", id);
       inputQuantityCart.current.value = "";
       inputProduct.current.value = "";
       setEditingCartId(null);
@@ -87,9 +75,26 @@ function Cart() {
     }
   }
 
+  function editCart(cart) {
+    console.log(cart);
+    inputQuantityCart.current.value = cart.quantityCart;
+    inputProduct.current.value = cart.productId;
+    // const selectElement = document.getElementById('outlined-select-product');
+    // selectElement.textContent = cart.productName;
+    setEditingCartId(cart.id);
+  }
+
+  async function deleteCart(id) {
+    try {
+      await api.delete(`v1/carts/${id}`);
+      getCart();
+    } catch (error) {
+      console.error("Error deleting item:", error);
+    }
+  }
+
   useEffect(() => {
     getCart();
-    getProducts();
     getItem();
   }, []);
 
@@ -116,21 +121,24 @@ function Cart() {
   return (
     <div className='container'>
       <form action="" style={{ padding: '0px' }}>
+        <label htmlFor="outlined-select-product">Produto</label>
         <TextField
           id="outlined-select-product"
           select
-          label="Produto"
           defaultValue=""
           inputRef={inputProduct}
           size='small'
+          placeholder='Produto'
+          label=""
         >
-          {items.map((item) => (
+        {items.map((item) => (
             <MenuItem key={item.id} value={item.id}>
-             {products.find(product => product.id === item.productId).name} 
+             {item.productName} 
             </MenuItem>
           ))}
         </TextField>
-        <TextField size='small' id="quantityCart" label="Quantidade" variant="outlined" inputRef={inputQuantityCart} />
+        
+        <TextField placeholder='Quantidade' size='small' id="quantityCart" variant="outlined" inputRef={inputQuantityCart} />
         <Button style={{ width: "100px" }} variant="contained" color="success" type='button' onClick={editingCartId ? () => updateCart(editingCartId) : createCart}>
           {editingCartId ? "Atualizar" : "Adicionar"}
         </Button>
@@ -151,11 +159,11 @@ function Cart() {
               carts.map(cart => {
                 return (
                   <StyledTableRow key={cart.id}>
-                    <StyledTableCell align="left">{items.find(item => item.id === cart.itemId)}</StyledTableCell>
+                   <StyledTableCell align="left">{cart.productName}</StyledTableCell>
                     <StyledTableCell>{cart.quantityCart}</StyledTableCell>
                     <StyledTableCell align="center">
-                      <Button variant="contained" color="warning" >Editar</Button> &nbsp;
-                      <Button variant="outlined" color="error" >Excluir</Button>
+                      <Button variant="contained" color="warning" onClick={() => editCart(cart)}>Editar</Button> &nbsp;
+                      <Button variant="outlined" color="error" onClick={() => deleteCart(cart.id)}>Excluir</Button>
                     </StyledTableCell>
                   </StyledTableRow>
                 );

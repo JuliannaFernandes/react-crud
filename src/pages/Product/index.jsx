@@ -9,14 +9,38 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
-import { styled } from '@mui/material';
+import { Box, styled, TablePagination } from '@mui/material';
 
 import './style.css';
 
 function Product() {
   const [products, setProducts] = useState([]);
   const [editingProductId, setEditingProductId] = useState(null);
+  const [page, setPage] = useState(0);  // Current page index
+  const [rowsPerPage, setRowsPerPage] = useState(5);
   const inputName = useRef();
+
+  const [filterText, setFilterText] = useState('');
+
+
+  const handleFilterChange = (e) => {
+    setFilterText(e.target.value);
+    setPage(0)
+  };
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+  
+  const filteredProducts = products.filter(product => {
+    return product.name && product.name.toLowerCase().includes(filterText.toLowerCase())
+  })
+
 
   async function getProduct() {
     try {
@@ -91,15 +115,6 @@ function Product() {
     },
   }));
   
-  const StyledTableRow = styled(TableRow)(({ theme }) => ({
-    '&:nth-of-type(odd)': {
-      backgroundColor: theme.palette.action.hover,
-    },
-    // hide last border
-    '&:last-child td, &:last-child th': {
-      border: 0,
-    },
-  }));
 
   return (
     <div className='container'>
@@ -113,7 +128,20 @@ function Product() {
   
       <br />
       <TableContainer component={Paper} sx={{ width:500,  minWidth: 200 }}>
-      <Table sx={{  minWidth: 200 }} aria-label="customized table">
+
+      <Box style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}>
+        <TextField
+          width='40%'
+          label="Pesquisar"
+          id="search"
+          variant="outlined"
+          value={filterText}
+          onChange={handleFilterChange}
+        >
+
+        </TextField>
+      </Box>
+      <Table sx={{  minWidth: 200 }} aria-label="simple table">
         <TableHead>
           <TableRow>
             <StyledTableCell>Produtos</StyledTableCell>
@@ -121,20 +149,30 @@ function Product() {
           </TableRow>
         </TableHead>
         <TableBody>
-        {products.length > 0 ? (
-          products.map(product => (
-            <StyledTableRow key={product.name}>
-              <StyledTableCell>{product.name}</StyledTableCell>
-              <StyledTableCell>
+        {
+          
+          filteredProducts !== null? filteredProducts.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((product) => (
+            <TableRow
+            key={product.id}
+            sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+            >
+              <TableCell>{product.name}</TableCell>
+              <TableCell>
                 <Button  variant="contained" color='warning' onClick={() => editProduct(product)}>Editar</Button> &nbsp;
                 <Button  variant="outlined" color='error' onClick={() => deleteProduct(product.id)}>Excluir</Button>
-              </StyledTableCell> 
-            </StyledTableRow>
-          ))) : (
-            <p>Sem produtos disponivel</p>
-          )}
+              </TableCell> 
+            </TableRow>
+            )) : (<TableRow><TableCell>Loading... </TableCell></TableRow>)}
         </TableBody>
       </Table>
+      <TablePagination  sx={{ fontSize: '1.1rem' }}
+            component="div"
+            count={products!= null? products.length: 0}
+            page={page}
+            onPageChange={handleChangePage}
+            rowsPerPage={rowsPerPage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+            rowsPerPageOptions={[5, 10, 25]}  />
     </TableContainer>
     </div>
   );

@@ -83,7 +83,6 @@ function Item() {
   async function deleteItem(id) {
     try {
       await api.delete(`v1/items/${id}`);
-      console.log("Deleted item:", id);
       getItem();
     } catch (error) {
       console.error("Error deleting item:", error);
