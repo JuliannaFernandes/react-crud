@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, Typography, CircularProgress, Grid2 } from "@mui/material";
 import api from "../../api/api";
-import "./style.css";
+import '../../assets/css/global.css';
 
 function Dashboard() {
   const [products, setProducts] = useState([]);

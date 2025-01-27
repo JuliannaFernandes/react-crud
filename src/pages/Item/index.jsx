@@ -3,7 +3,7 @@ import { useEffect, useState, useRef } from 'react';
 import Button from '@mui/material/Button';
 import MenuItem from '@mui/material/MenuItem';
 import api from '../../api/api';
-import './style.css';
+import '../../assets/css/global.css';
 import { Box, Paper, styled, Table, TableBody, TableCell, tableCellClasses, TableContainer, TableHead, TablePagination, TableRow } from '@mui/material';
 
 function Item() {

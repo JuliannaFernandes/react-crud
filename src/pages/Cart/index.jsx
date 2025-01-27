@@ -1,21 +1,18 @@
 import TextField from '@mui/material/TextField';
 import { useEffect, useState, useRef } from 'react';
 import Button from '@mui/material/Button';
-// import Box from '@mui/material/Box';
 import MenuItem from '@mui/material/MenuItem';
 import api from '../../api/api';
-import './style.css';
+import '../../assets/css/global.css';
 import { Box, Paper, styled, Table, TableBody, TableCell, tableCellClasses, TableContainer, TableHead, TablePagination, TableRow } from '@mui/material';
 
 
 function Cart() {
   const [carts, setCart] = useState([]);
   const [items, setItems] = useState([]);
-  // const [products, setProducts] = useState([]);
   const [editingCartId, setEditingCartId] = useState(null);
   const inputQuantityCart = useRef();
   const inputProduct = useRef();
-
 
   const [filterText, setFilterText] = useState('');
   const [page, setPage] = useState(0);  // Current page index
@@ -48,8 +45,6 @@ function Cart() {
       console.error("Error fetching carts:", error);
     }
   }
-
-
 
   async function getItem() {
     try {

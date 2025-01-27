@@ -1,7 +1,6 @@
 import TextField from '@mui/material/TextField';
 import { useEffect, useState, useRef } from 'react';
 import Button from '@mui/material/Button';
-import api from '../../api/api';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell, { tableCellClasses } from '@mui/material/TableCell';
@@ -10,8 +9,8 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import { Box, styled, TablePagination } from '@mui/material';
-
-import './style.css';
+import api from '../../api/api';
+import '../../assets/css/global.css';
 
 function Product() {
   const [products, setProducts] = useState([]);
