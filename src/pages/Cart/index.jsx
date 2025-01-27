@@ -10,7 +10,9 @@ import { Paper, styled, Table, TableBody, TableCell, tableCellClasses, TableCont
 
 function Cart() {
   const [carts, setCart] = useState([]);
-  const [products, setProducts] = useState([]);
+  const [items, setItems] = useState([]);
+  const [setProducts] = useState([]);
+  const [editingCartId, setEditingCartId] = useState(null);
   const inputQuantityCart = useRef();
   const inputProduct = useRef();
 
@@ -36,9 +38,59 @@ function Cart() {
     }
   }
 
+  async function getItem() {
+    try {
+      const item = await api.get('v1/items');
+      setItems(item.data.$values);
+      console.log("Fetched items:", item.data.$values);
+    } catch (error) {
+      console.error("Error fetching items:", error);
+    }
+  }
+
+  async function createCart() {
+
+    const QuantityCart = inputQuantityCart.current.value;
+    const ItemId = inputProduct.current.value;
+
+    if (QuantityCart === "" || ItemId === "") {
+      alert("Campo vazio, por favor preencha todos os campos");
+      return;
+    }
+
+    try {
+      await api.post('v1/carts', { QuantityCart, ItemId });
+      inputQuantityCart.current.value = "";
+      inputProduct.current.value = "";
+      getCart();
+    } catch (error) {
+      console.error("Error creating item:", error);
+    }
+  }
+
+  async function updateCart(id) {
+    try {
+      const QuantityCart = inputQuantityCart.current.value;
+      const ItemId = inputProduct.current.value;
+      if (QuantityCart === "" || ItemId === "") {
+        alert("Campo vazio, por favor preencha todos os campos");
+        return;
+      }
+      await api.put(`v1/carts/${id}`, { QuantityCart, ItemId });
+      console.log("Updated item:", id);
+      inputQuantityCart.current.value = "";
+      inputProduct.current.value = "";
+      setEditingCartId(null);
+      getCart();
+    } catch (error) {
+      console.error("Error updating item:", error);
+    }
+  }
+
   useEffect(() => {
     getCart();
     getProducts();
+    getItem();
   }, []);
 
 
@@ -56,6 +108,7 @@ function Cart() {
     '&:nth-of-type(odd)': {
       backgroundColor: theme.palette.action.hover,
     },
+    // hide last border
     '&:last-child td, &:last-child th': {
       border: 0,
     },
@@ -72,9 +125,9 @@ function Cart() {
           inputRef={inputProduct}
           size='small'
         >
-          {products.map((product) => (
-            <MenuItem key={product.id} value={product.id}>
-              {product.name}
+          {items.map((item) => (
+            <MenuItem key={item.id} value={item.id}>
+              {item.id}
             </MenuItem>
           ))}
         </TextField>
@@ -97,16 +150,13 @@ function Cart() {
           <TableBody>
             {carts.length > 0 ? (
               carts.map(cart => {
-                const matchedProduct = products.find(product => product.id === cart.item?.productId);
                 return (
                   <StyledTableRow key={cart.id}>
-                    <StyledTableCell align="left">
-                      {matchedProduct?.name || 'Produto não encontrado'}
-                    </StyledTableCell>
+                    <StyledTableCell align="left">{items.find(item => item.id === cart.itemId)}</StyledTableCell>
                     <StyledTableCell>{cart.quantityCart}</StyledTableCell>
                     <StyledTableCell align="center">
-                      <Button variant="contained" color="warning" onClick={() => editCart(cart)}>Editar</Button> &nbsp;
-                      <Button variant="outlined" color="error" onClick={() => deleteCart(cart.id)}>Excluir</Button>
+                      <Button variant="contained" color="warning" >Editar</Button> &nbsp;
+                      <Button variant="outlined" color="error" >Excluir</Button>
                     </StyledTableCell>
                   </StyledTableRow>
                 );
