@@ -8,19 +8,28 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
+import Alert from '@mui/material/Alert';
 import { Box, styled, TablePagination } from '@mui/material';
 import api from '../../api/api';
 import '../../assets/css/global.css';
+import '../../assets/css/Product.module.css';
 
 function Product() {
   const [products, setProducts] = useState([]);
   const [editingProductId, setEditingProductId] = useState(null);
-  const [page, setPage] = useState(0);  // Current page index
+  const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const inputName = useRef();
-
+  const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const [filterText, setFilterText] = useState('');
 
+  const clearMessages = () => {
+    setTimeout(() => {
+      setErrorMessage('');
+      setSuccessMessage('');
+    }, 2000);
+  };
 
   const handleFilterChange = (e) => {
     setFilterText(e.target.value);
@@ -35,7 +44,7 @@ function Product() {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
-  
+
   const filteredProducts = products.filter(product => {
     return product.name && product.name.toLowerCase().includes(filterText.toLowerCase())
   })
@@ -55,32 +64,55 @@ function Product() {
     try {
       const name = inputName.current.value;
       if (name === "") {
-        alert("Campo vazio, por favor preencha o campo");
+        setErrorMessage("Campo vazio, por favor preencha o campo");
+        clearMessages();
         return;
       }
+
+      if (!isNaN(name)) {
+        setErrorMessage("Campo não pode ser um número, por favor preencha o campo corretamente");
+        clearMessages();
+        return;
+      }
+
       await api.post('v1/products', { name });
       inputName.current.value = "";
+      setErrorMessage('');
+      setSuccessMessage("Produto cadastrado com sucesso!");
+      clearMessages();
       getProduct();
     } catch (error) {
       console.error("Error creating product:", error);
+      setErrorMessage("Erro ao criar produto, tente novamente");
+      clearMessages();
     }
   }
 
   async function updateProduct(id) {
     try {
       const name = inputName.current.value;
-
       if (name === "") {
-        alert("Campo vazio, por favor preencha o campo");
+        setErrorMessage("Campo vazio, por favor preencha o campo");
+        clearMessages();
         return;
       }
+
+      if (!isNaN(name)) {
+        setErrorMessage("Campo não pode ser um número, por favor preencha o campo corretamente");
+        clearMessages();
+        return;
+      }
+
       await api.put(`v1/products/${id}`, { name });
-      console.log("Updated product:", name);
-      setEditingProductId(null);
       inputName.current.value = "";
+      setErrorMessage('');
+      setSuccessMessage("Produto atualizado com sucesso!");
+      clearMessages();
       getProduct();
     } catch (error) {
       console.error("Error updating product:", error);
+      setErrorMessage("Error ao atualizar produto, tente novamente");
+      clearMessages();
     }
   }
 
@@ -93,10 +125,12 @@ function Product() {
   async function deleteProduct(id) {
     try {
       await api.delete(`v1/products/${id}`);
-      console.log("Deleted product:", id);
+      setSuccessMessage("Produto deletado com sucesso!");
       getProduct();
     } catch (error) {
       console.error("Error deleting product:", error);
+      setErrorMessage("Error ao deletar produto, tente novamente");
+      clearMessages();
     }
   }
 
@@ -113,66 +147,104 @@ function Product() {
       fontSize: 16,
     },
   }));
-  
+
 
   return (
     <div className='container'>
-    
-        <form style={{ padding: '0px', maxWidth: '100%',  display: 'flex',flexDirection: 'row',  }}>
-          <TextField id="nome" label="Nome" variant="outlined" sx={{width: '100%'}} inputRef={inputName} />
-          <Button variant="contained" color="success" type='button' style={{width: "125px"}} onClick={editingProductId ? () => updateProduct(editingProductId) : createProduct}>
-            {editingProductId ? "Atualizar" : "Criar"}
-          </Button>
-        </form>
-  
+      {errorMessage && <Alert severity="error">{errorMessage}</Alert>}
+      {successMessage && <Alert severity="success">{successMessage}</Alert>}
+      <form style={{ marginTop: '20px', maxWidth: '80%', display: 'flex', flexDirection: 'row', gap: '16px', justifyContent: 'center', alignItems: 'center', marginLeft: 'auto', marginRight: 'auto' }}>
+        <label htmlFor="name" style={{ fontSize: '20px', fontWeight: '800', marginRight: '8px' }}>Nome</label>
+        <TextField id="name" placeholder="Nome do produto" variant="outlined" sx={{ flexGrow: 1, '.MuiInputBase-root': { borderRadius: '8px', }, }} inputRef={inputName} />
+        <Button variant="contained" color="success" type='button' sx={{
+          width: '150px', height: '55px', borderRadius: '8px',
+          fontWeight: 'bold',
+          fontSize: '18px',
+          textTransform: 'none',
+        }} onClick={editingProductId ? () => updateProduct(editingProductId) : createProduct}>
+          {editingProductId ? "Atualizar" : "Criar"}
+        </Button>
+      </form>
+
       <br />
-      <TableContainer component={Paper} sx={{ width:500,  minWidth: 200 }}>
-
-      <Box style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}>
-        <TextField
-          width='40%'
-          label="Pesquisar"
-          id="search"
-          variant="outlined"
-          value={filterText}
-          onChange={handleFilterChange}
-        >
-
-        </TextField>
-      </Box>
-      <Table sx={{  minWidth: 200 }} aria-label="simple table">
-        <TableHead>
-          <TableRow>
-            <StyledTableCell>Produtos</StyledTableCell>
-            <StyledTableCell align="left">Ações</StyledTableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-        {
-          
-          filteredProducts !== null ? filteredProducts.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((product) => (
-            <TableRow
-            key={product.id}
-            sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-            >
-              <TableCell>{product.name}</TableCell>
-              <TableCell>
-                <Button  variant="contained" color='warning' onClick={() => editProduct(product)}>Editar</Button> &nbsp;
-                <Button  variant="outlined" color='error' onClick={() => deleteProduct(product.id)}>Excluir</Button>
-              </TableCell> 
+      <TableContainer
+        component={Paper}
+        sx={{
+          width: '50%',
+          minWidth: 200,
+          margin: '0 auto',
+          boxShadow: 3,
+          padding: 2,
+          borderRadius: 2,
+        }}
+      >
+        <Box sx={{ display: 'flex', justifyContent: 'flex-start', marginBottom: 2 }}>
+          <TextField
+            width="40%"
+            placeholder="Pesquisar"
+            id="search"
+            variant="outlined"
+            value={filterText}
+            onChange={handleFilterChange}
+            sx={{ marginRight: 2 }}
+          />
+        </Box>
+        <Table sx={{ minWidth: '100%' }} aria-label="simple table">
+          <TableHead >
+            <TableRow >
+              <StyledTableCell sx={{ fontSize: '18px', fontWeight: 'bold', }} >Produtos</StyledTableCell>
+              <StyledTableCell align="center" sx={{ fontSize: '18px', fontWeight: 'bold', }}>Ações</StyledTableCell>
             </TableRow>
-            )) : (<TableRow><TableCell>Loading... </TableCell></TableRow>)}
-        </TableBody>
-      </Table>
-      <TablePagination  sx={{ fontSize: '1.1rem' }}
-            component="div"
-            count={products!= null? products.length: 0}
-            page={page}
-            onPageChange={handleChangePage}
-            rowsPerPage={rowsPerPage}
-            onRowsPerPageChange={handleChangeRowsPerPage}
-            rowsPerPageOptions={[5, 10, 25]}  />
-    </TableContainer>
+          </TableHead>
+          <TableBody>
+            {filteredProducts !== null ? (
+              filteredProducts
+                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                .map((product) => (
+                  <TableRow
+                    key={product.id}
+                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                  >
+                    <TableCell sx={{ fontSize: '18px' }} >{product.name.charAt(0).toUpperCase() + product.name.slice(1)}</TableCell>
+                    <TableCell align="center">
+                      <Button
+                        variant="contained"
+                        color="info"
+                        onClick={() => editProduct(product)}
+                      >
+                        Editar
+                      </Button>{' '}
+                      &nbsp;
+                      <Button
+                        variant="contained"
+                        color="error"
+                        onClick={() => deleteProduct(product.id)}
+                      >
+                        Excluir
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+            ) : (
+              <TableRow>
+                <TableCell>Loading... </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+        <TablePagination
+          sx={{ fontSize: '1.1rem' }}
+          component="div"
+          count={products != null ? products.length : 0}
+          page={page}
+          onPageChange={handleChangePage}
+          rowsPerPage={rowsPerPage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+          rowsPerPageOptions={[]} 
+        />
+
+      </TableContainer>
+
     </div>
   );
 }
