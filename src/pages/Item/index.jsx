@@ -4,7 +4,7 @@ import Button from '@mui/material/Button';
 import MenuItem from '@mui/material/MenuItem';
 import api from '../../api/api';
 import './style.css';
-import { Paper, styled, Table, TableBody, TableCell, tableCellClasses, TableContainer, TableHead, TableRow } from '@mui/material';
+import { Box, Paper, styled, Table, TableBody, TableCell, tableCellClasses, TableContainer, TableHead, TablePagination, TableRow } from '@mui/material';
 
 function Item() {
   const [items, setItems] = useState([]);
@@ -13,6 +13,32 @@ function Item() {
   const inputQuantity = useRef();
   const inputUnitMeasure = useRef();
   const inputProduct = useRef();
+
+  const [filterText, setFilterText] = useState('');
+  const [page, setPage] = useState(0);  // Current page index
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+
+
+  const handleFilterChange = (e) => {
+    setFilterText(e.target.value);
+    setPage(0)
+  };
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+  
+  const filteredItems = items.filter(item => {
+    console.log("item", item)
+    return (item.productName && item.productName.toLowerCase().includes(filterText.toLowerCase())) || 
+    (item.unitMeasure && item.unitMeasure.toLowerCase().includes(filterText.toLowerCase()))
+  })
+
 
   async function getItem() {
     try {
@@ -104,16 +130,6 @@ function Item() {
     },
   }));
 
-  const StyledTableRow = styled(TableRow)(({ theme }) => ({
-    '&:nth-of-type(odd)': {
-      backgroundColor: theme.palette.action.hover,
-    },
-    // hide last border
-    '&:last-child td, &:last-child th': {
-      border: 0,
-    },
-  }));
-
   return (
     <div className='container'>
       <form style={{ padding: '0px', maxWidth: '100vw', display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -138,8 +154,20 @@ function Item() {
         </Button>
       </form>
       <br />
+      <Box style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}>
+        <TextField
+          width='40%'
+          label="Pesquisar"
+          id="search"
+          variant="outlined"
+          value={filterText}
+          onChange={handleFilterChange}
+        >
+
+        </TextField>
+      </Box>
       <TableContainer component={Paper} sx={{ width: 500, minWidth: 200 }}>
-        <Table sx={{ minWidth: 200 }} aria-label="customized table">
+        <Table sx={{ minWidth: 200 }} aria-label="simple table">
           <TableHead>
             <TableRow>
               <StyledTableCell>Quantidade</StyledTableCell>
@@ -149,24 +177,32 @@ function Item() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {items.length > 0 ? (
-              items.map(item => (
-                <StyledTableRow key={item.name}>
-                  <StyledTableCell align="left">{item.quantity}</StyledTableCell>
-                  <StyledTableCell align="left">{item.unitMeasure}</StyledTableCell>
-                  <StyledTableCell>{products.find(product => product.id === item.productId)?.name}</StyledTableCell>
-                  <StyledTableCell align="center">
-                    <Button variant="contained" color='warning' onClick={() => editItem(item)} >Editar</Button> &nbsp;
-                    <Button variant="outlined" color='error' onClick={() => deleteItem(item.id)} >Excluir</Button>
-                  </StyledTableCell>
-                </StyledTableRow>
-
-              ))
-            ) : (
-              <p>Sem itens disponivel</p>
-            )}
+            {
+              filteredItems !== null ? filteredItems.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((item) => (
+                <TableRow
+                key={item.id}
+                sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                >
+                
+                <TableCell align="left">{item.quantity}</TableCell>
+                <TableCell align="left">{item.unitMeasure}</TableCell>
+                <TableCell>{products.find(product => product.id === item.productId)?.name}</TableCell>
+                <TableCell align="center">
+                  <Button variant="contained" color='warning' onClick={() => editItem(item)} >Editar</Button> &nbsp;
+                  <Button variant="outlined" color='error' onClick={() => deleteItem(item.id)} >Excluir</Button>
+                </TableCell>
+              </TableRow>
+              )): (<TableRow><TableCell>Loading... </TableCell></TableRow>)}
           </TableBody>
         </Table>
+        <TablePagination  sx={{ fontSize: '1.1rem' }}
+            component="div"
+            count={products!= null? products.length: 0}
+            page={page}
+            onPageChange={handleChangePage}
+            rowsPerPage={rowsPerPage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+            rowsPerPageOptions={[5, 10, 25]}  />
       </TableContainer>
     </div>
   );
