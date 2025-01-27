@@ -11,7 +11,7 @@ import { Paper, styled, Table, TableBody, TableCell, tableCellClasses, TableCont
 function Cart() {
   const [carts, setCart] = useState([]);
   const [items, setItems] = useState([]);
-  const [setProducts] = useState([]);
+  const [products, setProducts] = useState([]);
   const [editingCartId, setEditingCartId] = useState(null);
   const inputQuantityCart = useRef();
   const inputProduct = useRef();
@@ -50,16 +50,16 @@ function Cart() {
 
   async function createCart() {
 
-    const QuantityCart = inputQuantityCart.current.value;
+    const quantityCart = inputQuantityCart.current.value;
     const ItemId = inputProduct.current.value;
 
-    if (QuantityCart === "" || ItemId === "") {
+    if (quantityCart === "" || ItemId === "") {
       alert("Campo vazio, por favor preencha todos os campos");
       return;
     }
 
     try {
-      await api.post('v1/carts', { QuantityCart, ItemId });
+      await api.post('v1/carts', { quantityCart, ItemId });
       inputQuantityCart.current.value = "";
       inputProduct.current.value = "";
       getCart();
@@ -70,13 +70,13 @@ function Cart() {
 
   async function updateCart(id) {
     try {
-      const QuantityCart = inputQuantityCart.current.value;
+      const quantityCart = inputQuantityCart.current.value;
       const ItemId = inputProduct.current.value;
-      if (QuantityCart === "" || ItemId === "") {
+      if (quantityCart === "" || ItemId === "") {
         alert("Campo vazio, por favor preencha todos os campos");
         return;
       }
-      await api.put(`v1/carts/${id}`, { QuantityCart, ItemId });
+      await api.put(`v1/carts/${id}`, { quantityCart, ItemId });
       console.log("Updated item:", id);
       inputQuantityCart.current.value = "";
       inputProduct.current.value = "";
@@ -108,7 +108,6 @@ function Cart() {
     '&:nth-of-type(odd)': {
       backgroundColor: theme.palette.action.hover,
     },
-    // hide last border
     '&:last-child td, &:last-child th': {
       border: 0,
     },
@@ -127,7 +126,7 @@ function Cart() {
         >
           {items.map((item) => (
             <MenuItem key={item.id} value={item.id}>
-              {item.id}
+             {products.find(product => product.id === item.productId).name} 
             </MenuItem>
           ))}
         </TextField>
