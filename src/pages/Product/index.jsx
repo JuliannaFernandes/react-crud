@@ -1,18 +1,10 @@
 import TextField from '@mui/material/TextField';
 import { useEffect, useState, useRef } from 'react';
 import Button from '@mui/material/Button';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell, { tableCellClasses } from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Paper from '@mui/material/Paper';
 import Alert from '@mui/material/Alert';
-import { Box, styled, TablePagination } from '@mui/material';
 import api from '../../api/api';
 import '../../assets/css/global.css';
-import '../../assets/css/Product.module.css';
+import { Box, Paper, styled, Table, TableBody, TableCell, tableCellClasses, TableContainer, TableHead, TablePagination, TableRow } from '@mui/material';
 
 function Product() {
   const [products, setProducts] = useState([]);
@@ -153,14 +145,10 @@ function Product() {
     <div className='container'>
       {errorMessage && <Alert severity="error">{errorMessage}</Alert>}
       {successMessage && <Alert severity="success">{successMessage}</Alert>}
-      <form style={{ marginTop: '20px', maxWidth: '80%', display: 'flex', flexDirection: 'row', gap: '16px', justifyContent: 'center', alignItems: 'center', marginLeft: 'auto', marginRight: 'auto' }}>
-        <label htmlFor="name" style={{ fontSize: '20px', fontWeight: '800', marginRight: '8px' }}>Nome</label>
-        <TextField id="name" placeholder="Nome do produto" variant="outlined" sx={{ flexGrow: 1, '.MuiInputBase-root': { borderRadius: '8px', }, }} inputRef={inputName} />
-        <Button variant="contained" color="success" type='button' sx={{
-          width: '150px', height: '55px', borderRadius: '8px',
-          fontWeight: 'bold',
-          fontSize: '18px',
-          textTransform: 'none',
+
+      <form style={{ marginTop: '20px', maxWidth: '40%', display: 'flex', flexDirection: 'row', gap: '16px', justifyContent: 'center', alignItems: 'center', marginLeft: 'auto', marginRight: 'auto' }}>
+        <TextField id="name" size="small" placeholder="Nome do produto" variant="outlined" sx={{ flexGrow: 1, '.MuiInputBase-root': { borderRadius: '8px', }, }} inputRef={inputName} />
+        <Button variant="contained" color="success" type='button' sx={{ width: '150px', height: '39px', fontSize: '17px', textTransform: 'none',
         }} onClick={editingProductId ? () => updateProduct(editingProductId) : createProduct}>
           {editingProductId ? "Atualizar" : "Criar"}
         </Button>
@@ -187,9 +175,10 @@ function Product() {
             value={filterText}
             onChange={handleFilterChange}
             sx={{ marginRight: 2 }}
+            size="small"
           />
         </Box>
-        <Table sx={{ minWidth: '100%' }} aria-label="simple table">
+        <Table aria-label="simple table">
           <TableHead >
             <TableRow >
               <StyledTableCell sx={{ fontSize: '18px', fontWeight: 'bold', }} >Produtos</StyledTableCell>
@@ -205,7 +194,7 @@ function Product() {
                     key={product.id}
                     sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                   >
-                    <TableCell sx={{ fontSize: '18px' }} >{product.name.charAt(0).toUpperCase() + product.name.slice(1)}</TableCell>
+                    <TableCell sx={{ fontSize: '17px' }} >{product.name.charAt(0).toUpperCase() + product.name.slice(1)}</TableCell>
                     <TableCell align="center">
                       <Button
                         variant="contained"
