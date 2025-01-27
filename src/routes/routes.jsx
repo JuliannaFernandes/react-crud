@@ -12,6 +12,7 @@ function AppRoutes() {
       <Routes>
         
         <Route path="/" element={<Dashboard />} />
+        <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/products" element={<Products />} />
         <Route path="/items" element={<Items />} />
         <Route path="/carts" element={<Carts />} />
