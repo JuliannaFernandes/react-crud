@@ -5,7 +5,7 @@ import Button from '@mui/material/Button';
 import MenuItem from '@mui/material/MenuItem';
 import api from '../../api/api';
 import './style.css';
-import { Paper, styled, Table, TableBody, TableCell, tableCellClasses, TableContainer, TableHead, TableRow } from '@mui/material';
+import { Box, Paper, styled, Table, TableBody, TableCell, tableCellClasses, TableContainer, TableHead, TablePagination, TableRow } from '@mui/material';
 
 
 function Cart() {
@@ -15,6 +15,29 @@ function Cart() {
   const [editingCartId, setEditingCartId] = useState(null);
   const inputQuantityCart = useRef();
   const inputProduct = useRef();
+
+
+  const [filterText, setFilterText] = useState('');
+  const [page, setPage] = useState(0);  // Current page index
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+
+  const handleFilterChange = (e) => {
+    setFilterText(e.target.value);
+    setPage(0)
+  };
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  const filteredCarts = carts.filter(cart => {
+    return cart.productName && cart.productName.toLowerCase().includes(filterText.toLowerCase())
+  })
 
   async function getCart() {
     try {
@@ -131,13 +154,13 @@ function Cart() {
           placeholder='Produto'
           label=""
         >
-        {items.map((item) => (
+          {items.map((item) => (
             <MenuItem key={item.id} value={item.id}>
-             {item.productName} 
+              {item.productName}
             </MenuItem>
           ))}
         </TextField>
-        
+
         <TextField placeholder='Quantidade' size='small' id="quantityCart" variant="outlined" inputRef={inputQuantityCart} />
         <Button style={{ width: "100px" }} variant="contained" color="success" type='button' onClick={editingCartId ? () => updateCart(editingCartId) : createCart}>
           {editingCartId ? "Atualizar" : "Adicionar"}
@@ -146,7 +169,18 @@ function Cart() {
 
 
       <TableContainer component={Paper} sx={{ width: 500, minWidth: 200 }}>
-        <Table sx={{ minWidth: 200 }} aria-label="customized table">
+      <Box style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}>
+        <TextField
+          width='40%'
+          label="Pesquisar"
+          id="search"
+          variant="outlined"
+          value={filterText}
+          onChange={handleFilterChange}
+        >
+            </TextField>
+                </Box>
+        <Table sx={{ minWidth: 200 }} aria-label="simple table">
           <TableHead>
             <TableRow>
               <StyledTableCell>Produto</StyledTableCell>
@@ -155,27 +189,30 @@ function Cart() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {carts.length > 0 ? (
-              carts.map(cart => {
-                return (
-                  <StyledTableRow key={cart.id}>
-                   <StyledTableCell align="left">{cart.productName}</StyledTableCell>
-                    <StyledTableCell>{cart.quantityCart}</StyledTableCell>
-                    <StyledTableCell align="center">
-                      <Button variant="contained" color="warning" onClick={() => editCart(cart)}>Editar</Button> &nbsp;
-                      <Button variant="outlined" color="error" onClick={() => deleteCart(cart.id)}>Excluir</Button>
-                    </StyledTableCell>
-                  </StyledTableRow>
-                );
-              })
-            ) : (
-              <StyledTableRow>
-                <StyledTableCell colSpan={3} align="center">Sem itens disponível</StyledTableCell>
-              </StyledTableRow>
-            )}
-
-          </TableBody>
+            {
+              filteredCarts !== null ? filteredCarts.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((cart) => (
+                <TableRow
+                  key={cart.id}
+                  sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                >
+                  <TableCell align="left">{cart.productName}</TableCell>
+                  <TableCell>{cart.quantityCart}</TableCell>
+                  <TableCell align="center">
+                    <Button variant="contained" color="warning" onClick={() => editCart(cart)}>Editar</Button> &nbsp;
+                    <Button variant="outlined" color="error" onClick={() => deleteCart(cart.id)}>Excluir</Button>
+                  </TableCell>
+                  </TableRow>
+                    )) : (<TableRow><TableCell>Loading... </TableCell></TableRow>)}
+            </TableBody>
         </Table>
+        <TablePagination sx={{ fontSize: '1.1rem' }}
+          component="div"
+          count={carts != null ? carts.length : 0}
+          page={page}
+          onPageChange={handleChangePage}
+          rowsPerPage={rowsPerPage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+          rowsPerPageOptions={[5, 10, 25]} />
       </TableContainer>
     </div>
   );
