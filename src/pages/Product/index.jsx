@@ -151,7 +151,7 @@ function Product() {
         <TableBody>
         {
           
-          filteredProducts !== null? filteredProducts.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((product) => (
+          filteredProducts !== null ? filteredProducts.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((product) => (
             <TableRow
             key={product.id}
             sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
